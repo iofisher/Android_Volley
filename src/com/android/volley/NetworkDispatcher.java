@@ -133,12 +133,17 @@ public class NetworkDispatcher extends Thread {
                 // Post the response back.
                 request.markDelivered();
                 mDelivery.postResponse(request, response);
+                request = null;
             } catch (VolleyError volleyError) {
                 volleyError.setNetworkTimeMs(SystemClock.elapsedRealtime() - startTimeMs);
                 parseAndDeliverNetworkError(request, volleyError);
             } catch (Exception e) {
                 VolleyLog.e(e, "Unhandled exception %s", e.toString());
                 VolleyError volleyError = new VolleyError(e);
+                volleyError.setNetworkTimeMs(SystemClock.elapsedRealtime() - startTimeMs);
+                mDelivery.postError(request, volleyError);
+            } catch (OutOfMemoryError error) {
+                VolleyError volleyError = new VolleyError(error);
                 volleyError.setNetworkTimeMs(SystemClock.elapsedRealtime() - startTimeMs);
                 mDelivery.postError(request, volleyError);
             }

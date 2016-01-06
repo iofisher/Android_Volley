@@ -57,6 +57,9 @@ public class HttpClientStack implements HttpStack {
     }
 
     private static void addHeaders(HttpUriRequest httpRequest, Map<String, String> headers) {
+        if (headers == null || headers.isEmpty()) {
+            return;
+        }
         for (String key : headers.keySet()) {
             httpRequest.setHeader(key, headers.get(key));
         }
@@ -82,7 +85,7 @@ public class HttpClientStack implements HttpStack {
         int timeoutMs = request.getTimeoutMs();
         // TODO: Reevaluate this connection timeout based on more wide-scale
         // data collection and possibly different for wifi vs. 3G.
-        HttpConnectionParams.setConnectionTimeout(httpParams, 5000);
+        HttpConnectionParams.setConnectionTimeout(httpParams, timeoutMs);
         HttpConnectionParams.setSoTimeout(httpParams, timeoutMs);
         return mClient.execute(httpRequest);
     }

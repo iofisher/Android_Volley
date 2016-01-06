@@ -155,7 +155,7 @@ public class HttpHeaderParser {
             }
         }
 
-        return defaultCharset;
+        return HTTP.UTF_8;
     }
 
     /**

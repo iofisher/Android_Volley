@@ -67,6 +67,8 @@ public class StringRequest extends Request<String> {
             parsed = new String(response.data, HttpHeaderParser.parseCharset(response.headers));
         } catch (UnsupportedEncodingException e) {
             parsed = new String(response.data);
+        } catch (OutOfMemoryError e) {
+            return Response.error(new ParseError(e));
         }
         return Response.success(parsed, HttpHeaderParser.parseCacheHeaders(response));
     }
