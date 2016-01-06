@@ -57,7 +57,7 @@ public class DiskBasedCache implements Cache {
     private final int mMaxCacheSizeInBytes;
 
     /** Default maximum disk usage in bytes. */
-    private static final int DEFAULT_DISK_USAGE_BYTES = 5 * 1024 * 1024; // ToDo 可以通过变量控制大小
+    private static final int DEFAULT_DISK_USAGE_BYTES = 5 * 1024 * 1024;
 
     /** High water mark percentage for the cache */
     private static final float HYSTERESIS_FACTOR = 0.9f;
@@ -539,9 +539,6 @@ public class DiskBasedCache implements Cache {
     static String readString(InputStream is) throws IOException {
         int n = (int) readLong(is);
         byte[] b = streamToBytes(is, n);
-        if (b == null) {
-            return "";
-        }
         return new String(b, "UTF-8");
     }
 

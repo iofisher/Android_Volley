@@ -42,7 +42,6 @@ import org.apache.http.impl.cookie.DateUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.Exception;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.util.Collections;
@@ -121,7 +120,7 @@ public class BasicNetwork implements Network {
 
                 // Some responses such as 204s do not have content.  We must check.
                 if (httpResponse.getEntity() != null) {
-                  responseContents = entityToBytesNoPool(httpResponse.getEntity());
+                  responseContents = entityToBytes(httpResponse.getEntity());
                 } else {
                   // Add 0 byte response as a way of honestly representing a
                   // no-content request.
@@ -165,10 +164,6 @@ public class BasicNetwork implements Network {
                     }
                 } else {
                     throw new NetworkError(networkResponse);
-                } catch (OutOfMemoryError error) {
-                    throw new VolleyError("Volley -->BasicNetwork #performRequest oom exception");
-                } catch (Exception e) {
-                    throw new VolleyError("Volley -->BasicNetwork #performRequest exception");
                 }
             }
         }
@@ -255,50 +250,6 @@ public class BasicNetwork implements Network {
             }
             mPool.returnBuf(buffer);
             bytes.close();
-        }
-    }
-
-    /**
-     * 替代{@link BasicNetwork#entityToBytes},取消byte数组池的使用
-     * @param entity
-     * @return
-     * @throws IOException
-     * @throws ServerError
-     * @throws OutOfMemoryError
-     */
-    private byte[] entityToBytesNoPool(HttpEntity entity) throws IOException, ServerError, OutOfMemoryError {
-        InputStream in = entity.getContent();
-        if (in == null) {
-            throw new ServerError();
-        }
-        ByteArrayBuffer dataBuffer = new ByteArrayBuffer(256);
-        try {
-            byte[] buf = new byte[1024];
-            int len;
-            while ((len = in.read(buf)) != -1) {
-                //1.检测读取的数据长度是否合法
-                checkOffsetAndCount(buf.length, 0, len);
-                if (len == 0) {
-                    continue;
-                }
-                //2.追加到dataBuffer中
-                dataBuffer.append(buf, 0, len);
-            }
-            return dataBuffer.toByteArray();
-        } finally {
-            try {
-                // Close the InputStream and release the resources by "consuming the content".
-                entity.consumeContent();
-            } catch (IOException e) {
-                VolleyLog.v("Error occured when calling consumingContent");
-            }
-        }
-    }
-
-    private  void checkOffsetAndCount(int arrayLength, int offset, int count) throws ArrayIndexOutOfBoundsException {
-        if ((offset | count) < 0 || offset > arrayLength || arrayLength - offset < count) {
-            throw new ArrayIndexOutOfBoundsException("length=" + arrayLength + "; regionStart=" + offset
-                    + "; regionLength=" + count);
         }
     }
 

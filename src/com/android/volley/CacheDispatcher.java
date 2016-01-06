@@ -115,17 +115,8 @@ public class CacheDispatcher extends Thread {
 
                 // We have a cache hit; parse its data for delivery back to the request.
                 request.addMarker("cache-hit");
-                Response<?> response = null;
-                try {
-                    response = request.parseNetworkResponse(
-                            new NetworkResponse(entry.data, entry.responseHeaders));
-                } catch (Exception e) {
-                    mDelivery.postError(request, new ParseError(e));
-                    continue;
-                } catch (Error error) {
-                    mDelivery.postError(request, new ParseError(error));
-                    continue;
-                }
+                Response<?> response = request.parseNetworkResponse(
+                        new NetworkResponse(entry.data, entry.responseHeaders));
                 request.addMarker("cache-hit-parsed");
 
                 if (!entry.refreshNeeded()) {
@@ -157,11 +148,6 @@ public class CacheDispatcher extends Thread {
 
             } catch (InterruptedException e) {
                 // We may have been interrupted because it was time to quit.
-                if (mQuit) {
-                    return;
-                }
-                continue;
-            } catch (OutOfMemoryError error) {
                 if (mQuit) {
                     return;
                 }

@@ -90,12 +90,6 @@ public abstract class Request<T> implements Comparable<Request<T>> {
     /** Whether or not a response has been delivered for this request yet. */
     private boolean mResponseDelivered = false;
 
-    // A cheap variant of request tracing used to dump slow requests.
-    private long mRequestBirthTime = 0;
-
-    /** Threshold at which we should log the request (even when debug logging is not enabled). */
-    private static final long SLOW_REQUEST_THRESHOLD_MS = 3000;
-
     /** The retry policy for this request. */
     private RetryPolicy mRetryPolicy;
 
@@ -108,8 +102,6 @@ public abstract class Request<T> implements Comparable<Request<T>> {
 
     /** An opaque token tagging this request; used for bulk cancellation. */
     private Object mTag;
-
-    private Priority mPriority = Priority.NORMAL;
 
     /**
      * Creates a new request with the given URL and error listener.  Note that
@@ -211,8 +203,6 @@ public abstract class Request<T> implements Comparable<Request<T>> {
     public void addMarker(String tag) {
         if (MarkerLog.ENABLED) {
             mEventLog.add(tag, Thread.currentThread().getId());
-        } else if (mRequestBirthTime == 0) {
-            mRequestBirthTime = SystemClock.elapsedRealtime();
         }
     }
 
@@ -243,11 +233,6 @@ public abstract class Request<T> implements Comparable<Request<T>> {
 
             mEventLog.add(tag, threadId);
             mEventLog.finish(this.toString());
-        } else {
-            long requestTime = SystemClock.elapsedRealtime() - mRequestBirthTime;
-            if (requestTime >= SLOW_REQUEST_THRESHOLD_MS) {
-                VolleyLog.d("%d ms: %s", requestTime, this.toString());
-            }
         }
     }
 
@@ -503,11 +488,7 @@ public abstract class Request<T> implements Comparable<Request<T>> {
      * Returns the {@link Priority} of this request; {@link Priority#NORMAL} by default.
      */
     public Priority getPriority() {
-        return mPriority;
-    }
-
-    public void setPriority(Priority priority) {
-        mPriority = priority;
+        return Priority.NORMAL;
     }
 
     /**
